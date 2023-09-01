@@ -7,16 +7,19 @@ on:
 jobs:
   check-application:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go: ['1.14', '1.15']
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
         with:
-          go-version: ${{ matrix.go }}
-      - run: go test
-      - run: go run math.go
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - uses: actions/setup-go@v4
+        with:
+          go-version: 1.15
+      - run: go test -coverprofile=coverage.out
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       # - name: Set up QEMU
       #   uses: docker/setup-qemu-action@v1
 
@@ -33,7 +36,7 @@ jobs:
       #   id: docker_build
       #   uses: docker/build-push-action@v2
       #   with:
-      #     push: false
-      #     tags: wesleywillians/fc2.0-ci-go:latest
+      #     push: true
+      #     tags: felipegoista/fullcycle-ci:latest
 
     
